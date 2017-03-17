@@ -125,7 +125,7 @@ func Parse(csstext string) *CSSStyleSheet {
 				parseRule(context, s, css)
 				resetContextStyleRule(context)
 			default:
-				panic(fmt.Sprintf("At rule '%s' is not supported", token.Value))
+				// panic(fmt.Sprintf("At rule '%s' is not supported", token.Value))
 			}
 		default:
 			if context.State == STATE_NONE {
