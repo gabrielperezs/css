@@ -1,7 +1,5 @@
 package css
 
-import ()
-
 type RuleType int
 
 const (
@@ -11,16 +9,23 @@ const (
 	MEDIA_RULE
 	FONT_FACE_RULE
 	PAGE_RULE
-	
+	WEBKITKEYFRAMES
+	KEYFRAMES
+	MSVIEWPORT
+	MOZDOCUMENT
 )
 
 var ruleTypeNames = map[RuleType]string{
-	STYLE_RULE: "",
-	MEDIA_RULE: "@media",
-	CHARSET_RULE: "@charset",
-	IMPORT_RULE: "@import",
-	FONT_FACE_RULE: "@font-face",
-	PAGE_RULE: "@page",
+	STYLE_RULE:      "",
+	MEDIA_RULE:      "@media",
+	CHARSET_RULE:    "@charset",
+	IMPORT_RULE:     "@import",
+	FONT_FACE_RULE:  "@font-face",
+	PAGE_RULE:       "@page",
+	WEBKITKEYFRAMES: "@-webkit-keyframes",
+	KEYFRAMES:       "@keyframes",
+	MSVIEWPORT:      "@-ms-viewport",
+	MOZDOCUMENT:     "@-mod-document",
 }
 
 func (rt RuleType) Text() string {

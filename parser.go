@@ -1,8 +1,10 @@
 package css
 
 import (
-	"github.com/gorilla/css/scanner"
+	"fmt"
 	"strings"
+
+	"github.com/gorilla/css/scanner"
 )
 
 /*
@@ -123,8 +125,25 @@ func Parse(csstext string) *CSSStyleSheet {
 				context.NowRuleType = PAGE_RULE
 				parseRule(context, s, css)
 				resetContextStyleRule(context)
+			case "@-webkit-keyframes":
+				context.NowRuleType = WEBKITKEYFRAMES
+				parseRule(context, s, css)
+				resetContextStyleRule(context)
+			case "@keyframes":
+				context.NowRuleType = KEYFRAMES
+				parseRule(context, s, css)
+				resetContextStyleRule(context)
+			case "@-ms-viewport":
+				context.NowRuleType = MSVIEWPORT
+				parseRule(context, s, css)
+				resetContextStyleRule(context)
+			case "@-moz-document":
+				context.NowRuleType = MOZDOCUMENT
+				parseRule(context, s, css)
+				resetContextStyleRule(context)
 			default:
 				// panic(fmt.Sprintf("At rule '%s' is not supported", token.Value))
+				fmt.Printf("At rule '%s' is not supported\n", token.Value)
 			}
 		default:
 			if context.State == STATE_NONE {
