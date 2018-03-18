@@ -2,8 +2,9 @@ package css
 
 import (
 	//"fmt"
-	"github.com/gorilla/css/scanner"
 	"strings"
+
+	"github.com/gorilla/css/scanner"
 )
 
 func newImportRule(statement string) *CSSRule {
@@ -36,7 +37,7 @@ func parseImport(s *scanner.Scanner) *CSSRule {
 	var statement string
 	for {
 		token := s.Next()
-		
+
 		//fmt.Printf("Import: %s:'%s'\n", token.Type.String(), token.Value)
 
 		if token.Type == scanner.TokenEOF || token.Type == scanner.TokenError {

@@ -2,8 +2,9 @@ package css
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMultipleSelectors(t *testing.T) {
@@ -12,7 +13,7 @@ func TestMultipleSelectors(t *testing.T) {
 					}
 					p .b {
 						font-size: 250%;
-					}`)
+					}`, f)
 
 	assert.Equal(t, css.CssRuleList[0].Style.SelectorText, "div .a")
 	assert.Equal(t, css.CssRuleList[1].Style.SelectorText, "p .b")
@@ -20,21 +21,21 @@ func TestMultipleSelectors(t *testing.T) {
 }
 
 func TestIdSelector(t *testing.T) {
-	css := Parse("#div { color: red;}")
+	css := Parse("#div { color: red;}", f)
 
 	assert.Equal(t, css.CssRuleList[0].Style.Styles["color"].Value, "red")
 	assert.Equal(t, css.CssRuleList[0].Style.SelectorText, "#div")
 }
 
 func TestClassSelector(t *testing.T) {
-	css := Parse(".div { color: green;}")
+	css := Parse(".div { color: green;}", f)
 
 	assert.Equal(t, css.CssRuleList[0].Style.Styles["color"].Value, "green")
 	assert.Equal(t, css.CssRuleList[0].Style.SelectorText, ".div")
 }
 
 func TestStarSelector(t *testing.T) {
-	css := Parse("* { text-rendering: optimizelegibility; }")
+	css := Parse("* { text-rendering: optimizelegibility; }", f)
 
 	assert.Equal(t, "optimizelegibility", css.CssRuleList[0].Style.Styles["text-rendering"].Value)
 	assert.Equal(t, css.CssRuleList[0].Style.SelectorText, "*")
@@ -44,7 +45,7 @@ func TestStarSelectorMulti(t *testing.T) {
 	css := Parse(`div .a {
 						font-size: 150%;
 					}
-				* { text-rendering: optimizelegibility; }`)
+				* { text-rendering: optimizelegibility; }`, f)
 
 	assert.Equal(t, "150%", css.CssRuleList[0].Style.Styles["font-size"].Value)
 	assert.Equal(t, css.CssRuleList[0].Style.SelectorText, "div .a")
@@ -63,7 +64,7 @@ func TestMixedClassSelectors(t *testing.T) {
 		css := Parse(fmt.Sprintf(` %s {
 							    	border-collapse: separate;
 							    	padding: 10px 0 0
-							    	}`, selector))
+							    	}`, selector), f)
 
 		assert.Equal(t, "separate", css.CssRuleList[0].Style.Styles["border-collapse"].Value)
 		assert.Equal(t, "10px 0 0", css.CssRuleList[0].Style.Styles["padding"].Value)
@@ -94,7 +95,7 @@ func TestGenericSelectors(t *testing.T) {
 		css := Parse(fmt.Sprintf(` %s {
 							    	border-collapse: separate;
 							    	padding: 10px 0 0
-							    	}`, selector))
+							    	}`, selector), f)
 
 		assert.Equal(t, "separate", css.CssRuleList[0].Style.Styles["border-collapse"].Value)
 		assert.Equal(t, "10px 0 0", css.CssRuleList[0].Style.Styles["padding"].Value)
@@ -141,7 +142,7 @@ func TestFilterSelectors(t *testing.T) {
 		css := Parse(fmt.Sprintf(` %s {
 							    	border-collapse: separate;
 							    	padding: 10px 0 0
-							    	}`, selector))
+							    	}`, selector), f)
 
 		assert.Equal(t, "separate", css.CssRuleList[0].Style.Styles["border-collapse"].Value)
 		assert.Equal(t, "10px 0 0", css.CssRuleList[0].Style.Styles["padding"].Value)
@@ -155,7 +156,7 @@ func TestFontFace(t *testing.T) {
 				      src: url("https://mdn.mozillademos.org/files/2468/VeraSeBd.ttf");
 				    }
 				    
-				    body { font-family: "Bitstream Vera Serif Bold", serif }`)
+				    body { font-family: "Bitstream Vera Serif Bold", serif }`, f)
 
 	assert.Equal(t, css.CssRuleList[0].Style.SelectorText, "")
 	assert.Equal(t, css.CssRuleList[0].Style.Styles["font-family"].Value, "\"Bitstream Vera Serif Bold\"")
@@ -167,7 +168,7 @@ func TestFontFace(t *testing.T) {
 func TestPage(t *testing.T) {
 	css := Parse(`@page :first {
 					margin: 2in 3in;
-				}`)
+				}`, f)
 
 	assert.Equal(t, css.CssRuleList[0].Style.SelectorText, ":first")
 	assert.Equal(t, css.CssRuleList[0].Style.Styles["margin"].Value, "2in 3in")

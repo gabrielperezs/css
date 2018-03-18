@@ -1,7 +1,7 @@
 package css
 
 import (
-	"fmt"
+	"log"
 	"strings"
 
 	"github.com/gorilla/css/scanner"
@@ -40,6 +40,7 @@ type parserContext struct {
 	NowRuleType      RuleType
 	CurrentRule      *CSSRule
 	CurrentMediaRule *CSSRule
+	FilterURI        func(uri string) string
 }
 
 func resetContextStyleRule(context *parserContext) {
@@ -53,7 +54,7 @@ func parseRule(context *parserContext, s *scanner.Scanner, css *CSSStyleSheet) {
 	context.CurrentRule = NewRule(context.NowRuleType)
 	context.NowSelectorText += parseSelector(s)
 	context.CurrentRule.Style.SelectorText = strings.TrimSpace(context.NowSelectorText)
-	context.CurrentRule.Style.Styles = parseBlock(s)
+	context.CurrentRule.Style.Styles = parseBlock(s, context)
 	if context.CurrentMediaRule != nil {
 		context.CurrentMediaRule.Rules = append(context.CurrentMediaRule.Rules, context.CurrentRule)
 	} else {
@@ -64,12 +65,13 @@ func parseRule(context *parserContext, s *scanner.Scanner, css *CSSStyleSheet) {
 // Parse takes a string of valid css rules, stylesheet,
 // and parses it. Be aware this function has poor error handling
 // so you should have valid syntax in your css
-func Parse(csstext string) *CSSStyleSheet {
+func Parse(csstext string, filter func(uri string) string) *CSSStyleSheet {
 	context := &parserContext{
 		State:            STATE_NONE,
 		NowSelectorText:  "",
 		NowRuleType:      STYLE_RULE,
 		CurrentMediaRule: nil,
+		FilterURI:        filter,
 	}
 
 	css := &CSSStyleSheet{}
@@ -94,16 +96,12 @@ func Parse(csstext string) *CSSStyleSheet {
 			break
 		case scanner.TokenS:
 			break
+		case scanner.TokenBOM:
+			break
 		case scanner.TokenAtKeyword:
 			switch token.Value {
 			case "@media":
 				context.NowRuleType = MEDIA_RULE
-			case "@font-face":
-				// Parse as normal rule, would be nice to parse according to syntax
-				// https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face
-				context.NowRuleType = FONT_FACE_RULE
-				parseRule(context, s, css)
-				resetContextStyleRule(context)
 			case "@import":
 				// No validation
 				// https://developer.mozilla.org/en-US/docs/Web/CSS/@import
@@ -120,30 +118,21 @@ func Parse(csstext string) *CSSStyleSheet {
 					css.CssRuleList = append(css.CssRuleList, rule)
 				}
 				resetContextStyleRule(context)
-
-			case "@page":
-				context.NowRuleType = PAGE_RULE
+			case "@font-face":
+				// Parse as normal rule, would be nice to parse according to syntax
+				// https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face
+				context.NowRuleType = Get(token.Value)
 				parseRule(context, s, css)
 				resetContextStyleRule(context)
-			case "@-webkit-keyframes":
-				context.NowRuleType = WEBKITKEYFRAMES
-				parseRule(context, s, css)
-				resetContextStyleRule(context)
-			case "@keyframes":
-				context.NowRuleType = KEYFRAMES
-				parseRule(context, s, css)
-				resetContextStyleRule(context)
-			case "@-ms-viewport":
-				context.NowRuleType = MSVIEWPORT
-				parseRule(context, s, css)
-				resetContextStyleRule(context)
-			case "@-moz-document":
-				context.NowRuleType = MOZDOCUMENT
+			case "@font-feature-values", "@page", "@keyframes", "@viewport", "@namespace", "@supports":
+				context.NowRuleType = Get(token.Value)
 				parseRule(context, s, css)
 				resetContextStyleRule(context)
 			default:
-				// panic(fmt.Sprintf("At rule '%s' is not supported", token.Value))
-				fmt.Printf("At rule '%s' is not supported\n", token.Value)
+				log.Printf("D: %s = %s", token.Value, strings.Replace(csstext, "}", "}\n", -1))
+				context.NowRuleType = Get(token.Value)
+				parseRule(context, s, css)
+				resetContextStyleRule(context)
 			}
 		default:
 			if context.State == STATE_NONE {

@@ -2,8 +2,13 @@ package css
 
 import (
 	"fmt"
-	"sort"
 	"strings"
+)
+
+var (
+	newLine = string(byte('\n'))
+	retLine = string(byte('\r'))
+	tabChar = string(byte('\t'))
 )
 
 type CSSStyleRule struct {
@@ -18,7 +23,10 @@ func (sr *CSSStyleRule) Text() string {
 		decls = append(decls, s.Text())
 	}
 
-	sort.Strings(decls)
+	sr.SelectorText = strings.TrimSpace(strings.Replace(sr.SelectorText, " ", " ", -1))
+	sr.SelectorText = strings.Replace(sr.SelectorText, newLine, "", -1)
+	sr.SelectorText = strings.Replace(sr.SelectorText, retLine, "", -1)
+	sr.SelectorText = strings.Replace(sr.SelectorText, tabChar, "", -1)
 
-	return fmt.Sprintf("%s { %s } ", sr.SelectorText, strings.Join(decls, ";"))
+	return fmt.Sprintf("%s{%s}", sr.SelectorText, strings.Join(decls, ";"))
 }

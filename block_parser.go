@@ -2,8 +2,10 @@ package css
 
 import (
 	//"fmt"
-	"github.com/gorilla/css/scanner"
+
 	"strings"
+
+	"github.com/gorilla/css/scanner"
 )
 
 type blockParserContext struct {
@@ -17,10 +19,10 @@ type blockParserContext struct {
 // parses it and returns a map of css style declarations.
 func ParseBlock(csstext string) map[string]*CSSStyleDeclaration {
 	s := scanner.New(csstext)
-	return parseBlock(s)
+	return parseBlock(s, nil)
 }
 
-func parseBlock(s *scanner.Scanner) map[string]*CSSStyleDeclaration {
+func parseBlock(s *scanner.Scanner, parserContext *parserContext) map[string]*CSSStyleDeclaration {
 	/* block       : '{' S* [ any | block | ATKEYWORD S* | ';' S* ]* '}' S*;
 	property    : IDENT;
 	value       : [ any | block | ATKEYWORD S* ]+;
@@ -41,8 +43,6 @@ func parseBlock(s *scanner.Scanner) map[string]*CSSStyleDeclaration {
 
 	for {
 		token := s.Next()
-
-		//fmt.Printf("BLOCK(%d): %s:'%s'\n", context.State, token.Type.String(), token.Value)
 
 		if token.Type == scanner.TokenError {
 			break
@@ -78,7 +78,7 @@ func parseBlock(s *scanner.Scanner) map[string]*CSSStyleDeclaration {
 		case scanner.TokenChar:
 			if context.State == STATE_NONE {
 				if token.Value == "{" {
-					break	
+					break
 				}
 			}
 			if context.State == STATE_PROPERTY {
@@ -120,6 +120,12 @@ func parseBlock(s *scanner.Scanner) map[string]*CSSStyleDeclaration {
 		case scanner.TokenString:
 			fallthrough
 		case scanner.TokenURI:
+			if token.Type == scanner.TokenURI {
+				if parserContext != nil {
+					token.Value = parserContext.FilterURI(token.Value)
+				}
+			}
+
 			fallthrough
 		case scanner.TokenHash:
 			fallthrough

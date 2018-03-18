@@ -2,8 +2,9 @@ package css
 
 import (
 	//"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestMedia(t *testing.T) {
@@ -22,7 +23,7 @@ func TestMedia(t *testing.T) {
 			        width: 100% !important;
 			        display: block !important
 			        }
-        		}`)
+        		}`, f)
 
 	//fmt.Println(css)
 	assert.Equal(t, css.CssRuleList[0].Style.SelectorText, "only screen and (max-width: 600px)")
@@ -68,7 +69,7 @@ func TestMediaMulti(t *testing.T) {
 				}
         		table.two {
 					width: 80px;
-				}`)
+				}`, f)
 
 	assert.Equal(t, len(css.CssRuleList), 4)
 

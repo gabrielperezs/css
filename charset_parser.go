@@ -2,8 +2,9 @@ package css
 
 import (
 	//"fmt"
-	"github.com/gorilla/css/scanner"
 	"strings"
+
+	"github.com/gorilla/css/scanner"
 )
 
 func newCharsetRule(statement string) *CSSRule {
@@ -19,7 +20,7 @@ func newCharsetRule(statement string) *CSSRule {
 
 func parseCharset(s *scanner.Scanner) *CSSRule {
 	/*
-		
+
 		Syntax:
 		@charset charset;
 
@@ -31,7 +32,7 @@ func parseCharset(s *scanner.Scanner) *CSSRule {
 	var statement string
 	for {
 		token := s.Next()
-		
+
 		//fmt.Printf("Import: %s:'%s'\n", token.Type.String(), token.Value)
 
 		if token.Type == scanner.TokenEOF || token.Type == scanner.TokenError {

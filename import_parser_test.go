@@ -1,9 +1,10 @@
 package css
 
 import (
+	"testing"
+
 	"github.com/gorilla/css/scanner"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestImport(t *testing.T) {
@@ -12,7 +13,7 @@ func TestImport(t *testing.T) {
 					@import 'custom.css';
 					@import url("chrome://communicator/skin/");
 					@import "common.css" screen, projection;
-					@import url('landscape.css') screen and (orientation:landscape);`)
+					@import url('landscape.css') screen and (orientation:landscape);`, f)
 
 	assert.Equal(t, css.CssRuleList[0].Style.SelectorText, "url(\"fineprint.css\") print")
 	assert.Equal(t, css.CssRuleList[1].Style.SelectorText, "url(\"bluish.css\") projection, tv")
