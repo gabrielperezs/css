@@ -1,7 +1,6 @@
 package css
 
 import (
-	//"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -41,7 +40,7 @@ func TestMedia(t *testing.T) {
 func TestMediaMulti(t *testing.T) {
 	css := Parse(`
 				table.one {
-					width: 30px;	
+					width: 30px;
 				}
 				@media only screen and (max-width: 600px) {
 				    table[class="body"] img {

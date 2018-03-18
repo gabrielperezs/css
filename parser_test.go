@@ -117,25 +117,6 @@ func TestDashClassname(t *testing.T) {
 
 func TestNotSupportedAtRule(t *testing.T) {
 	rules := []string{
-		`@keyframes mymove {
-			    0%   {top: 0px;}
-			    25%  {top: 200px;}
-			    50%  {top: 100px;}
-			    75%  {top: 200px;}
-			    100% {top: 0px;}
-			}`,
-		`@-webkit-keyframes mymove {
-			    0%   {top: 0px;}
-			    25%  {top: 200px;}
-			    50%  {top: 100px;}
-			    75%  {top: 200px;}
-			    100% {top: 0px;}
-			} `,
-		`@counter-style winners-list {
-			  system: fixed;
-			  symbols: url(gold-medal.svg) url(silver-medal.svg) url(bronze-medal.svg);
-			  suffix: " ";
-			}`,
 		`@namespace url(http://www.w3.org/1999/xhtml);`,
 		`@document url(http://www.w3.org/),
                url-prefix(http://www.w3.org/Style/),
@@ -146,10 +127,9 @@ func TestNotSupportedAtRule(t *testing.T) {
 			  body { color: purple; background: yellow; }
 			}`,
 	}
-
+	css := &CSSStyleSheet{}
+	css.CssRuleList = make([]*CSSRule, 0)
 	for _, rule := range rules {
-		assert.Panics(t, func() {
-			Parse(rule, f)
-		})
+		assert.Equal(t, css, Parse(rule, f))
 	}
 }

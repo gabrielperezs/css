@@ -1,6 +1,7 @@
 package css
 
 import (
+	"fmt"
 	"log"
 	"strings"
 
@@ -35,12 +36,12 @@ const (
 )
 
 type parserContext struct {
-	State            State
-	NowSelectorText  string
-	NowRuleType      RuleType
-	CurrentRule      *CSSRule
-	CurrentMediaRule *CSSRule
-	FilterURI        func(uri string) string
+	State             State
+	NowSelectorText   string
+	NowRuleType       RuleType
+	CurrentRule       *CSSRule
+	CurrentNestedRule *CSSRule
+	FilterURI         func(uri string) string
 }
 
 func resetContextStyleRule(context *parserContext) {
@@ -55,8 +56,8 @@ func parseRule(context *parserContext, s *scanner.Scanner, css *CSSStyleSheet) {
 	context.NowSelectorText += parseSelector(s)
 	context.CurrentRule.Style.SelectorText = strings.TrimSpace(context.NowSelectorText)
 	context.CurrentRule.Style.Styles = parseBlock(s, context)
-	if context.CurrentMediaRule != nil {
-		context.CurrentMediaRule.Rules = append(context.CurrentMediaRule.Rules, context.CurrentRule)
+	if context.CurrentNestedRule != nil {
+		context.CurrentNestedRule.Rules = append(context.CurrentNestedRule.Rules, context.CurrentRule)
 	} else {
 		css.CssRuleList = append(css.CssRuleList, context.CurrentRule)
 	}
@@ -67,11 +68,11 @@ func parseRule(context *parserContext, s *scanner.Scanner, css *CSSStyleSheet) {
 // so you should have valid syntax in your css
 func Parse(csstext string, filter func(uri string) string) *CSSStyleSheet {
 	context := &parserContext{
-		State:            STATE_NONE,
-		NowSelectorText:  "",
-		NowRuleType:      STYLE_RULE,
-		CurrentMediaRule: nil,
-		FilterURI:        filter,
+		State:             STATE_NONE,
+		NowSelectorText:   "",
+		NowRuleType:       STYLE_RULE,
+		CurrentNestedRule: nil,
+		FilterURI:         filter,
 	}
 
 	css := &CSSStyleSheet{}
@@ -80,8 +81,6 @@ func Parse(csstext string, filter func(uri string) string) *CSSStyleSheet {
 
 	for {
 		token := s.Next()
-
-		//fmt.Printf("Parse(%d): %s:'%s'\n", context.State, token.Type.String(), token.Value)
 
 		if token.Type == scanner.TokenEOF || token.Type == scanner.TokenError {
 			break
@@ -124,29 +123,39 @@ func Parse(csstext string, filter func(uri string) string) *CSSStyleSheet {
 				context.NowRuleType = Get(token.Value)
 				parseRule(context, s, css)
 				resetContextStyleRule(context)
-			case "@font-feature-values", "@page", "@keyframes", "@viewport", "@namespace", "@supports":
+			case "@font-feature-values", "@page", "@viewport", "@namespace", "@supports":
+				context.NowRuleType = Get(token.Value)
+				parseRule(context, s, css)
+				resetContextStyleRule(context)
+			case "@keyframes":
+				context.NowRuleType = Get(token.Value)
+			case "@-webkit-keyframes":
+				context.NowRuleType = Get(token.Value)
+			case "@counter-style":
 				context.NowRuleType = Get(token.Value)
 				parseRule(context, s, css)
 				resetContextStyleRule(context)
 			default:
-				log.Printf("D: %s = %s", token.Value, strings.Replace(csstext, "}", "}\n", -1))
+				log.Println(fmt.Printf("Skip unsupported atrule: %s", token.Value))
+				// skipRules(s)
+				// resetContextStyleRule(context)
 				context.NowRuleType = Get(token.Value)
 				parseRule(context, s, css)
 				resetContextStyleRule(context)
 			}
 		default:
 			if context.State == STATE_NONE {
-				if token.Value == "}" && context.CurrentMediaRule != nil {
+				if token.Value == "}" && context.CurrentNestedRule != nil {
 					// close media rule
-					css.CssRuleList = append(css.CssRuleList, context.CurrentMediaRule)
-					context.CurrentMediaRule = nil
+					css.CssRuleList = append(css.CssRuleList, context.CurrentNestedRule)
+					context.CurrentNestedRule = nil
 					break
 				}
 			}
 
-			if context.NowRuleType == MEDIA_RULE {
-				context.CurrentMediaRule = NewRule(context.NowRuleType)
-				context.CurrentMediaRule.Style.SelectorText = strings.TrimSpace(token.Value + parseSelector(s))
+			if context.NowRuleType == MEDIA_RULE || context.NowRuleType == Get("@keyframes") || context.NowRuleType == Get("@-webkit-keyframes") {
+				context.CurrentNestedRule = NewRule(context.NowRuleType)
+				context.CurrentNestedRule.Style.SelectorText = strings.TrimSpace(token.Value + parseSelector(s))
 				resetContextStyleRule(context)
 				break
 			} else {

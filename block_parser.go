@@ -1,8 +1,6 @@
 package css
 
 import (
-	//"fmt"
-
 	"strings"
 
 	"github.com/gorilla/css/scanner"

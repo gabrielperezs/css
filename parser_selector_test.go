@@ -174,3 +174,17 @@ func TestPage(t *testing.T) {
 	assert.Equal(t, css.CssRuleList[0].Style.Styles["margin"].Value, "2in 3in")
 	assert.Equal(t, css.CssRuleList[0].Type, PAGE_RULE)
 }
+
+func TestCounterStyle(t *testing.T) {
+	css := Parse(`@counter-style winners-list {
+				system: cyclic;
+				symbols: "\1F44D";
+				suffix: " ";
+	  }`)
+
+	assert.Equal(t, css.CssRuleList[0].Style.SelectorText, "winners-list")
+	assert.Equal(t, css.CssRuleList[0].Style.Styles["system"].Value, "cyclic")
+	assert.Equal(t, css.CssRuleList[0].Style.Styles["symbols"].Value, "\"\\1F44D\"")
+	assert.Equal(t, css.CssRuleList[0].Style.Styles["suffix"].Value, "\" \"")
+	assert.Equal(t, css.CssRuleList[0].Type, COUNTER_STYLE_RULE)
+}

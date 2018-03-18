@@ -1,6 +1,8 @@
 package css
 
-import "github.com/gorilla/css/scanner"
+import (
+	"github.com/gorilla/css/scanner"
+)
 
 func parseSelector(s *scanner.Scanner) string {
 	/*
